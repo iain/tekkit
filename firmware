@@ -1,0 +1,187 @@
+function dump(t)
+  for k,v in pairs(t) do
+    print(k,v)
+  end
+end
+
+raphael = {}
+raphael.breadcrumbs = {}
+
+function raphael.crumb(where)
+  table.insert(raphael.breadcrumbs, where)
+end
+
+function raphael.move(where)
+  print("Moving "..where)
+  local success = loadstring("return turtle."..where.."()")()
+  return success
+end
+
+function raphael.forward()
+  if raphael.move("forward") then
+    raphael.crumb("back")
+    return true
+  else
+    return false
+  end
+end
+
+function raphael.back()
+  if raphael.move("back") then
+    raphael.crumb("forward")
+    return true
+  else
+    return false
+  end
+end
+
+function raphael.left()
+  raphael.move("turnLeft")
+  if raphael.move("forward") then
+    raphael.crumb("turnRight")
+    raphael.crumb("back")
+    return true
+  else
+    raphael.move("turnRight")
+    return false
+  end
+end
+
+function raphael.right()
+  raphael.move("turnRight")
+  if raphael.move("forward") then
+    raphael.crumb("turnLeft")
+    raphael.crumb("back")
+    return true
+  else
+    raphael.move("turnLeft")
+    return false
+  end
+end
+
+function raphael.turnRight()
+  raphael.move("turnRight")
+  raphael.crumb("turnLeft")
+  return true
+end
+
+function raphael.turnLeft()
+  raphael.move("turnLeft")
+  raphael.crumb("turnRight")
+  return true
+end
+
+function raphael.down()
+  if raphael.move("down") then
+    raphael.crumb("up")
+    return true
+  else
+    return false
+  end
+end
+
+function raphael.up()
+  if raphael.move("up") then
+    raphael.crumb("down")
+    return true
+  else
+    return false
+  end
+end
+
+function raphael.pop()
+  table.remove(raphael.breadcrumbs, #raphael.breadcrumbs)
+end
+
+function raphael.goHome()
+  print("Going Home!")
+  local distance = #raphael.breadcrumbs
+  for i=1,distance do
+    while raphael.move(raphael.breadcrumbs[distance - i + 1])  == false do
+      print("retry")
+    end
+  end
+  raphael.breadcrumbs = {}
+end
+
+raphael.path = {}
+
+function raphael.plan(where)
+  table.insert(raphael.path, where)
+end
+
+function raphael.executePlan()
+  for i=1,#raphael.path do
+    if raphael.path[i]() == false then
+      return false
+    end
+  end
+end
+
+function raphael.newPlan()
+  raphael.path = {}
+end
+
+--------------------------
+
+r = raphael
+
+function toHell()
+  print("Press enter to start...")
+  read()
+  r.forward()
+  r.forward()
+  r.forward()
+  r.forward()
+  r.forward()
+  r.forward()
+  r.forward()
+  r.forward()
+
+  if turtle.detectDown() then
+    turtle.digDown()
+    while r.down() do
+      turtle.digDown()
+      turtle.dig()
+      turtle.select(9)
+      if turtle.getItemCount(9) > 0 then
+        turtle.place()
+      end
+    end
+  else
+    while r.down() do
+    end
+  end
+
+  for i=1, 5 do
+    r.up()
+  end
+
+  for x=1, 20 do
+    turtle.dig()
+    r.forward()
+    turtle.digUp()
+
+    r.turnLeft()
+    for z=1, x do
+      turtle.dig()
+      r.forward()
+      turtle.digUp()
+    end
+
+    r.turnLeft()
+    for z=1, x do
+      turtle.dig()
+      r.forward()
+      turtle.digUp()
+    end
+  end
+
+  r.goHome()
+  sleep(10)
+end
+
+toHell()
+
+
+
